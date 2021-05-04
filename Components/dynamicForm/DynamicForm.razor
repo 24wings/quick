@@ -1,0 +1,84 @@
+@using System.Reflection;
+
+@if (type != null)
+{
+    <span>namespance:@type.Namespace</span>
+}
+<br>
+
+<br>
+@if (render)
+{
+    <EditForm EditContext="editContext">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <Row Gutter="16">
+            @foreach (var item in props)
+            {
+
+                <AntDesign.Col Class="gutter-row" Span="12">
+                    <DynamicField Prop="item" OnValueChange="(value=>changeValue(item,value))" FieldValue="obj.GetType().GetProperty(item.Name).GetValue(obj)"> </DynamicField>
+                </AntDesign.Col>
+            }
+        </Row>
+
+
+        <Button Type="@ButtonType.Primary" HtmlType="submit">
+            提交
+        </Button>
+
+    </EditForm>
+}
+
+@code{
+
+
+    public List<PropertyInfo> props = new List<PropertyInfo>();
+    private EditContext editContext;
+
+    [Parameter]
+    public TypeInfo type { get; set; }
+    private string name;
+    object obj;
+    private bool render { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        if (!render)
+        {
+            obj = type.Assembly.CreateInstance(type.FullName);
+            editContext = new EditContext(obj);
+            props = type.GetProperties().ToList();
+            render = true;
+        }
+
+
+
+
+
+
+    }
+
+
+    private void HandleSubmit()
+    {
+        var isValid = editContext.Validate();
+
+
+    }
+    private void changeValue(PropertyInfo prop, object value)
+    {
+        Type objType = obj.GetType();
+        objType.GetProperty(prop.Name).SetValue(obj, value);
+        var filed = editContext.Field(prop.Name);
+
+
+        editContext.NotifyFieldChanged(filed);
+        editContext.NotifyValidationStateChanged();
+
+    }
+
+
+
+
+}

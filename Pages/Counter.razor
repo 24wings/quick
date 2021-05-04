@@ -1,0 +1,46 @@
+﻿@page "/counter"
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+
+<EditForm EditContext="@editContext" OnSubmit="@HandleSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputText id="name" @bind-Value="name" @onchange="changeValue" />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private string name { get; set; }
+    private int currentCount = 0;
+    private ExampleModel exampleModel = new ExampleModel();
+
+    private EditContext editContext;
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(exampleModel);
+    }
+    private void IncrementCount()
+    {
+
+        currentCount++;
+    }
+
+    private void HandleSubmit()
+    {
+        var isValid = editContext.Validate();
+
+
+    }
+    private void changeValue()
+    {
+        Console.WriteLine(name);
+        exampleModel.Name = name;
+    }
+}

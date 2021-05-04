@@ -1,0 +1,231 @@
+﻿@using Data.Props
+@using LolTest.Data.Heros;
+@using LolTest.Calc;
+@inject MessageService _message
+
+@page "/"
+<style>
+    .skill-icon{
+        position: absolute;
+    bottom: 0px;
+    right: 4px;
+    color: #fff;
+    background: #000;
+    font-size: 10px;
+    text-align: center;
+    width: 16px;
+    height: 18px;
+    }
+    .skill-detail{
+       background:  rgba(10,17,33,.9);
+    }
+</style>
+
+
+@* <SurveyPrompt Title="How is Blazor working for you?" /> *@
+
+<div style="display: flex;">
+    <div style="width: 200px;">
+        <img src="@hero.Avatar">
+        <h3>@hero.NickName</h3>
+        <h5>@hero.Name</h5>
+    </div>
+    <div style="display: flex;">
+        <div style="width: 200px;">
+            <div  style="display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-column-gap: 23px;">
+                <div style="position:relative">
+                    <Popover  >
+                        <ContentTemplate><div>@hero.Q.Detail</div></ContentTemplate>
+                        <ChildContent>
+<img src="/images/KayleQ.png" style="width:44px">  
+                    <div class="skill-icon">Q</div>
+                        </ChildContent>
+   
+</Popover>
+                    
+
+                </div>
+                <div  style="position:relative">
+                    <img src="/images/KayleW.png"/ style="width:44px">
+                    <div  class="skill-icon">W</div>
+                </div>
+                <div  style="position:relative">
+                    <img src="/images/KayleE.png"/ style="width:44px">
+                    <div  class="skill-icon">E</div>
+                </div>
+                
+
+            </div>
+        </div>
+        <div>
+            <table>
+                <thead>
+                    <th>攻击力</th>
+                    <th>法术强度</th>
+                    <th>护甲</th>
+                    <th>魔抗</th>
+                    <th>攻击速度</th>
+
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@hero.ATK</td>
+                        <td>@hero.SpellPower</td>
+                        <td>48</td>
+                        <td>34</td>
+                        <th>@hero.AttackSpeed</th>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+<Divider Orientation="left">所有装备</Divider>
+<Row Gutter="16">
+    @foreach (var item in propBases)
+    {
+        <AntDesign.Col Class="gutter-row" Span="1" style="cursor: pointer;">
+            <div @onclick="()=>addPropToHero(item)" style="overflow: hidden;">
+                <img src="@item.ImageUrl" style="width: 42px;height:42px">
+                <span style="font-size:12px">@item.Name</span>
+            </div>
+
+        </AntDesign.Col>
+    }
+
+
+</Row>
+<Divider Orientation="left">英雄装备</Divider>
+<Row Gutter="16">
+    总价格:@TotalMoney
+</Row>
+<Row Gutter="16" >
+    @foreach (var item in hero.PropList)
+    {
+        <AntDesign.Col Class="gutter-row" Span="1">
+            <img src="@item.ImageUrl" style="width: 42px;height:42px">
+
+        </AntDesign.Col>
+    }
+    @for (var i = 0; i < 6 - hero.PropList.Count; i++)
+    {
+        <AntDesign.Col Class="gutter-row" Span="1">
+            <img src="daoju.png">
+        </AntDesign.Col>
+    }
+
+</Row>
+
+<Divider Orientation="left">计算</Divider>
+<div style="margin-bottom: 20px;">
+    <Tooltip Title=@("添加敌方英雄")>
+        <Button Type="primary" Shape="circle" Icon="robot" @onclick="@(()=>addAmy())" />
+    </Tooltip>
+<RadioGroup @bind-Value="@calcWay">
+        <Radio RadioButton Value="@(CalcWay.CalcNumber)">攻击次数</Radio>
+        <Radio RadioButton Value="@(CalcWay.CalcTime)">时间</Radio>
+        <Radio RadioButton Value="@(CalcWay.CalcSkill)">技能连招</Radio>
+    </RadioGroup>
+    <div style="margin:20px 40px;">
+    @switch (calcWay)
+    {
+        case CalcWay.CalcNumber:
+        <div style="width: 200px;">
+        <Input Placeholder="攻击次数" @bind-Value="@attackNumber"  />
+        </div>
+         break;
+        default:
+        <span></span>
+        break;
+    }
+    <Button Type="primary" style="margin:20px 40px;">计算</Button>
+</div>
+</div>
+
+
+<Row Gutter="16"  style="min-height:400px">
+    @foreach (var item in ArmyList)
+    {
+        <AntDesign.Col Class="gutter-row" Span="5" >
+            <img src="@item.Avatar" alt="" style="width: 80%;">
+            <div>
+                @item.Name
+            </div>
+            <div>
+               <div> 攻击力:@item.ATK</div>
+               <div> 法强:@item.SpellPower</div>
+               <div>护甲:@item.ATK</div>
+               <div>魔抗:@item.ATK</div>
+               <div>生命值:@item.Hp</div>
+               
+
+            </div>
+        </AntDesign.Col>
+
+    }
+
+</Row>
+
+
+
+<button @onclick="@calcDamage">计算</button>
+
+<div>伤害为:@damanage</div>
+
+<div>
+    <div style="display: flex;">
+        <div style="flex:1">纳什之牙</div>
+        <div style="flex: 1;">造成伤害</div>
+
+
+    </div>
+
+</div>
+
+
+@code{
+    public Calc.CalcWay calcWay{get;set;}=Calc.CalcWay.CalcNumber;
+    public int TotalMoney { get; set; } = 0;
+    public int damanage { get; set; } = 0;
+    /// <summary>
+    /// 攻击次数
+    /// </summary>
+    /// <value></value>
+    public int attackNumber{get;set;}=0;
+    HeroBase hero = new Kayle();
+
+    public List<HeroBase> ArmyList { get; set; } = new List<HeroBase>();
+    public List<PropBase> propBases { get; set; } = new List<PropBase>() { new NashorTooth(), new NashorTooth() };
+
+
+    public void calcDamage()
+    {
+        var hero = new Kayle();
+        damanage = hero.AttackNumberCalc(10, hero);
+    }
+
+    public async Task addPropToHero(PropBase prop)
+    {
+        if (prop.Uniq && hero.PropList.FirstOrDefault(prop1 => prop1.Name == prop.Name) != null)
+        {
+            await _message.Error(prop.Name + "只能购买一件");
+
+        }
+        else
+        {
+            hero.AddProp(prop);
+            TotalMoney += prop.Money;
+        }
+
+
+    }
+
+    public void addAmy()
+    {
+        ArmyList.Add(new Army());
+    }
+
+}
